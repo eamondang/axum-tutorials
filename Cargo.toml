@@ -2,6 +2,11 @@
 name = "axum-rust"
 version = "0.1.0"
 edition = "2021"
+authors = ["Dang Quang Vu <eamondang@gmail.com>"]
+readme = "README.org"
+repository = "https://github.com/eamondang/axum-tutorials"
+license = "MIT"
+description = "The tutorial in youtube build a server had efficient and performant, it's good choice for high-traffic applications."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
