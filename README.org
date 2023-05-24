@@ -1,0 +1,105 @@
+#+TITLE: Rust Back-end Server
+#+AUTHOR: Dang Quang Vu
+#+EMAIL: eamondang@gmail.com
+#+SETUPFILE: ~/theme-readtheorg.setup
+#+HTML_HEAD: <style>pre.src{background:#343131;color:white;} </style>
+
+* New Service
+#+begin_src rustic
+async fn main() {
+  let app = Router::new() .route("/", get(say_hello))
+
+  let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
+
+  Server::bind(&addr).serve(app.into_make_service()).await;
+}
+
+async fn say_hello() -> String {
+  "Hello World!!!".to_string()
+}
+#+end_src
+
+* Path
+#+begin_src rustic
+async fn greeting(Path(msg): Path<String>) -> String {
+  format!("User info for {}", msg)
+}
+#+end_src
+
+* Query
+#+begin_src rustic
+#[derive(Deserialize)]
+struct SubjectArg {
+  pub page: i32,
+  pub keyword: String,
+}
+
+async fn query(msg: Option<Query<SubjectArg>>) -> String {
+  if let Some(msg) = msg {
+    let msg = msg.0;
+    return format!("Page {}, keyword: {}", msg.page, msg.keyword);
+  }
+  "Page 0, no Keyword".to_string()
+}
+
+#+end_src
+
+* Form
+#+begin_src rustic
+async fn form_req(Form(form): Form<CreateUser>) -> String {
+  format!("Created User: {}, name: {}", form.id, form.name)
+}
+#+end_src
+
+* Json
+#+begin_src rustic
+async fn json_req(Json(msg): Json<CreateUser>) -> String {
+  format!("Created User: {}, name: {}", msg.id, msg.name)
+}
+#+end_src
+
+* Headers
+** Get Headers
+#+begin_src rustic
+async fn get_headers(headers: HeaderMap) -> String {
+  format!("headers: {:#?}", headers)
+}
+#+end_src
+
+** Get Agent User
+#+begin_src rustic
+async fn get_agent_user(headers: HeaderMap) -> String {
+  headers.get(header::USER_AGENT).and_then(|v| v.to_str().ok()).map(|v| v.to_string()).unwrap()
+}
+
+#+end_src
+
+** Get Agent User 2
++ add features
+#+begin_src sh :results output
+cargo add axum -F headers
+#+end_src
+
+#+begin_src rustic
+async fn get_user_req(TypedHeader(header): TypedHeader<UserAgent>) -> String {
+  header.to_string()
+}
+#+end_src
+
+
+* Response Json
+#+begin_src rustic
+async fn json_req_json(Json(msg): Json<CreateUser>) -> Json<CreateUser> {
+  let user = CreateUser { id: msg.id, name: msg.name };
+  Json(user)
+}
+#+end_src
+
+* IntoResponse
+#+begin_src rustic
+
+async fn respon_res(Json(msg): Json<CreateUser>) -> impl IntoResponse {
+  let user = CreateUser { id: msg.id, name: msg.name };
+  Json(user).into_response()
+}
+#+end_src
